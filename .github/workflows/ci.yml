@@ -1,21 +1,61 @@
-name: Dissect CI
-on: [push, pull_request]
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
-  test:
+  build-test-security:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.10
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install dependencies
         run: |
-          sudo apt-get install graphviz
-          pip install -e .[dev]
-          pip install pytest
-      - name: Run tests
-        run: pytest tests/ -v --cov=dissect
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          pip install pytest pytest-cov coverage
+          pip install bandit pip-audit
+
+      - name: Run tests with coverage (threshold 60%)
+        run: |
+          pytest --maxfail=1 --disable-warnings -q \
+            --cov=. --cov-report=term-missing --cov-fail-under=60
+
+      - name: Upload coverage to artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            ./.coverage*
+            ./htmlcov/**
+          if-no-files-found: ignore
+
+      - name: Security scan (Bandit)
+        run: |
+          bandit -r . -x tests -lll -q || (echo "Bandit found issues" && exit 1)
+
+      - name: Security scan (pip-audit)
+        run: |
+          pip-audit --strict || (echo "pip-audit found vulnerable dependencies" && exit 1)
