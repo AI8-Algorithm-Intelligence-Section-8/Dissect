@@ -114,3 +114,9 @@ dmypy.json
 
 # Specific directory to ignore
 /algorithms-master
+
+# Old project template (unused)
+project-template/
+
+# Agent workflow templates (unused)
+.agent/
