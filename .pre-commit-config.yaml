@@ -1,4 +1,4 @@
-exclude: "^(archive|benchmarks)/"
+exclude: "^(node_modules|gui/node_modules|gui/dist)/"
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -7,6 +7,9 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: detect-private-key
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.6
@@ -21,18 +24,9 @@ repos:
       - id: mypy
         additional_dependencies: [types-requests]
 
-  - repo: local
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
     hooks:
-      - id: pylint
-        name: pylint
-        entry: .venv/bin/python3 -m pylint
-        language: system
-        types: [python]
-        args: [ "--fail-under=9.5", "dissect/" ]
-
-      - id: generate-diagrams
-        name: Generate Diagrams
-        entry: python3 scripts/generate_diagrams.py
-        language: system
-        pass_filenames: false
-        always_run: true
+      - id: bandit
+        args: ["-c", "pyproject.toml", "-r", "oblivion/"]
+        additional_dependencies: ["bandit[toml]"]
