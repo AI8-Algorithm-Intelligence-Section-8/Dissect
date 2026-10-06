@@ -127,10 +127,11 @@ class OrchestrationGraph:
 
             return (node_duration + max_child_duration, [node] + max_child_path)
 
-        roots = self.get_root_nodes()
-        if not roots:
-            return []
+        return self._best_root_path(self.get_root_nodes(), dfs)
 
+    @staticmethod
+    def _best_root_path(roots, dfs):
+        """Racine au plus long chemin (extrait pour complexite)."""
         max_duration = 0
         critical_path = []
         for root in roots:
@@ -138,7 +139,6 @@ class OrchestrationGraph:
             if duration > max_duration:
                 max_duration = duration
                 critical_path = path
-
         return critical_path
 
     def to_dict(self) -> Dict[str, Any]:
