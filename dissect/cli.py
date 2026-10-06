@@ -14,6 +14,8 @@ from .exporters.html import save_html
 from .exporters.mermaid import save_mermaid
 from .trace_receiver import parse_trace_file
 
+TRACE_FILE_HELP = "Path to trace file (JSON)"
+
 
 def explain_command(args):
     """Generate AI summary of the trace."""
@@ -138,12 +140,12 @@ def main():
 
     # Trace command
     trace_parser = subparsers.add_parser("trace", help="Parse and inspect a trace file")
-    trace_parser.add_argument("--file", "-f", required=True, help="Path to trace file (JSON)")
+    trace_parser.add_argument("--file", "-f", required=True, help=TRACE_FILE_HELP)
     trace_parser.set_defaults(func=trace_command)
 
     # Visualize command
     viz_parser = subparsers.add_parser("visualize", help="Generate visualization from trace")
-    viz_parser.add_argument("--file", "-f", required=True, help="Path to trace file (JSON)")
+    viz_parser.add_argument("--file", "-f", required=True, help=TRACE_FILE_HELP)
     viz_parser.add_argument(
         "--format",
         "-t",
@@ -160,7 +162,7 @@ def main():
     explain_parser = subparsers.add_parser(
         "explain", help="Generate AI-powered insights from trace"
     )
-    explain_parser.add_argument("--file", "-f", required=True, help="Path to trace file (JSON)")
+    explain_parser.add_argument("--file", "-f", required=True, help=TRACE_FILE_HELP)
     explain_parser.add_argument(
         "--provider",
         "-p",

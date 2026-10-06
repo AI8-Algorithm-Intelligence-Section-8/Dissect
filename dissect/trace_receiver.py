@@ -6,9 +6,17 @@ into OrchestrationGraph structures.
 """
 
 import json
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from .graph import Edge, Node, NodeType, OrchestrationGraph
+
+UTC_SUFFIX = "+00:00"
+
+
+def _parse_ts(ts):
+    """ISO-8601 tolerant Z (meme regle aux 3 sites d appel)."""
+    return datetime.fromisoformat(ts.replace("Z", UTC_SUFFIX))
 
 
 class TraceParser:
@@ -210,11 +218,8 @@ class LangChainParser(TraceParser):
             return ts
         if isinstance(ts, str):
             # Try ISO format
-            from datetime import datetime
-
             try:
-                dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-                return dt.timestamp()
+                return _parse_ts(ts).timestamp()
             except Exception:
                 return None
         return None
@@ -352,11 +357,8 @@ class CrewAIParser(TraceParser):
                 return ts / 1000
             return ts
         if isinstance(ts, str):
-            from datetime import datetime
-
             try:
-                dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-                return dt.timestamp()
+                return _parse_ts(ts).timestamp()
             except Exception:
                 return None
         return None
@@ -454,11 +456,8 @@ class AutoGenParser(TraceParser):
                 return ts / 1000
             return ts
         if isinstance(ts, str):
-            from datetime import datetime
-
             try:
-                dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-                return dt.timestamp()
+                return _parse_ts(ts).timestamp()
             except Exception:
                 return None
         return None

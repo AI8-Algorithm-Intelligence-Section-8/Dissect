@@ -25,7 +25,7 @@ class AlgorithmScanner:
         }
 
     def scan_directory(self, root_path):
-        inventory = {
+        inventory: dict = {
             "meta": {"root": str(root_path), "total_files": 0, "algorithms_found": 0},
             "files": [],
         }
@@ -59,15 +59,13 @@ class AlgorithmScanner:
             # print(f"Error parsing {file_path}: {e}") # Reduce noise
             return None
 
-        file_data = {"path": str(file_path), "functions": []}
+        file_data: dict = {"path": str(file_path), "functions": []}
 
         # Find all function definitions (simplified traversal)
         # Note: Ideally this should be language-agnostic node type checking
         # For now relying on tree-sitter standard naming common in supported langs
-        cursor = tree.walk()
-
         def traverse(node):
-            if node.type == "function_definition" or node.type == "method_declaration":
+            if node.type in {"function_definition", "method_declaration"}:
                 self._analyze_function_node(node, code_bytes, file_data)
 
             for child in node.children:
@@ -80,7 +78,7 @@ class AlgorithmScanner:
     def _analyze_function_node(self, node, code_bytes, file_data):
         try:
             func_name = node.child_by_field_name("name").text.decode("utf-8")
-        except:
+        except Exception:
             func_name = "anonymous"
 
         function_entry = {"name": func_name, "line": node.start_point[0] + 1, "algorithms": []}
